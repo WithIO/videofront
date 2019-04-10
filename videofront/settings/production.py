@@ -199,7 +199,7 @@ CELERY_RESULT_BACKEND = "django-db"
 CELERY_CACHE_BACKEND = "django-cache"
 CELERY_TASK_ALWAYS_EAGER = DEBUG
 CELERY_TASK_EAGER_PROPAGATES = True
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_BEAT_SCHEDULE = {
     "clean_upload_urls": {"task": "clean_upload_urls", "schedule": timedelta(hours=1)},

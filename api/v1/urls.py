@@ -2,8 +2,11 @@
 from django.conf.urls import include, url
 from rest_framework import routers
 from rest_framework.authtoken import views as authtoken_views
+from rest_framework_swagger.views import get_swagger_view
 
 from . import views
+
+schema_view = get_swagger_view(title="VideoFront API")
 
 
 class Router(routers.DefaultRouter):
@@ -36,6 +39,6 @@ router.register(
 
 urlpatterns = [
     url(r"^", include(router.urls)),
-    url(r"^docs$", views.schema_view),
+    url(r"^docs$", schema_view),
     url(r"^auth-token/", authtoken_views.obtain_auth_token, name="auth-token"),
 ]

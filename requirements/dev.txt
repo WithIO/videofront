@@ -20,9 +20,12 @@ click==7.0                # via black, pip-tools
 coreapi==2.3.3            # via django-rest-swagger, openapi-codec
 coreschema==0.0.4         # via coreapi
 cssutils==1.0.2           # via pycaption
+django-celery-beat==1.4.0
+django-celery-results==1.0.4
 django-filter==2.1.0
-django-rest-swagger==2.0.5
-django==1.11
+django-rest-swagger==2.2.0
+django-timezone-field==3.0  # via django-celery-beat
+django==1.11.20
 djangorestframework==3.9.2
 docutils==0.14            # via botocore
 enum34==1.1.6             # via pycaption
@@ -46,8 +49,9 @@ pluggy==0.9.0             # via pytest
 py==1.8.0                 # via pytest
 pycaption==1.0.1
 pytest==4.4.0
-python-dateutil==2.8.0    # via botocore, faker
-pytz==2019.1              # via celery, django
+python-crontab==2.3.6     # via django-celery-beat
+python-dateutil==2.8.0    # via botocore, faker, python-crontab
+pytz==2019.1              # via celery, django, django-timezone-field
 requests==2.21.0          # via coreapi
 s3transfer==0.2.0         # via boto3
 simplejson==3.16.0        # via django-rest-swagger
