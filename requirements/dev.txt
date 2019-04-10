@@ -25,7 +25,7 @@ django-celery-results==1.0.4
 django-filter==2.1.0
 django-rest-swagger==2.2.0
 django-timezone-field==3.0  # via django-celery-beat
-django==1.11.20
+django==2.2
 djangorestframework==3.9.2
 docutils==0.14            # via botocore
 enum34==1.1.6             # via pycaption
@@ -56,6 +56,7 @@ requests==2.21.0          # via coreapi
 s3transfer==0.2.0         # via boto3
 simplejson==3.16.0        # via django-rest-swagger
 six==1.12.0               # via faker, pip-tools, pycaption, pytest, python-dateutil
+sqlparse==0.3.0           # via django
 text-unidecode==1.2       # via faker
 toml==0.10.0              # via black
 uritemplate==3.0.0        # via coreapi

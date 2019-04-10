@@ -31,7 +31,7 @@ class Video(models.Model):
         default=utils.generate_long_random_id,
     )
 
-    owner = models.ForeignKey(User)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{} - {}".format(self.public_id, self.title)
@@ -65,7 +65,7 @@ def create_video_processing_state(sender, instance=None, created=False, **kwargs
 class Playlist(models.Model):
     name = models.CharField(max_length=128, db_index=True)
     videos = models.ManyToManyField(Video, related_name="playlists")
-    owner = models.ForeignKey(User)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     public_id = models.CharField(
         max_length=20,
         unique=True,
@@ -101,12 +101,15 @@ class VideoUploadUrl(models.Model):
     was_used = models.BooleanField(
         verbose_name="Was the upload url used?", default=False, db_index=True
     )
-    owner = models.ForeignKey(User, related_name="video_upload_urls")
+    owner = models.ForeignKey(
+        User, related_name="video_upload_urls", on_delete=models.CASCADE
+    )
     playlist = models.ForeignKey(
         Playlist,
         verbose_name="Playlist to which the video will be added after upload",
         blank=True,
         null=True,
+        on_delete=models.SET_NULL,
     )
     origin = models.CharField(
         verbose_name="Access-Control-Allow-Origin header value to add to CORS responses",
@@ -136,7 +139,9 @@ class ProcessingState(models.Model):
         (STATUS_RESTART, "Restart"),
     )
 
-    video = models.OneToOneField(Video, related_name="processing_state")
+    video = models.OneToOneField(
+        Video, related_name="processing_state", on_delete=models.CASCADE
+    )
     started_at = models.DateTimeField(
         verbose_name="Time of processing job start", auto_now=True
     )
@@ -160,7 +165,7 @@ class ProcessingState(models.Model):
 
 class Subtitle(models.Model):
 
-    video = models.ForeignKey(Video, related_name="subtitles")
+    video = models.ForeignKey(Video, related_name="subtitles", on_delete=models.CASCADE)
     public_id = models.CharField(
         max_length=20,
         unique=True,
@@ -189,7 +194,7 @@ class Subtitle(models.Model):
 
 class VideoFormat(models.Model):
 
-    video = models.ForeignKey(Video, related_name="formats")
+    video = models.ForeignKey(Video, related_name="formats", on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
     bitrate = models.FloatField(validators=[MinValueValidator(0)])
 

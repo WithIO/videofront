@@ -1,5 +1,5 @@
 """Url definitions for version 1 of the Video Front API"""
-from django.conf.urls import include, url
+from django.urls import include, path
 from rest_framework import routers
 from rest_framework.authtoken import views as authtoken_views
 from rest_framework_swagger.views import get_swagger_view
@@ -38,7 +38,7 @@ router.register(
 )
 
 urlpatterns = [
-    url(r"^", include(router.urls)),
-    url(r"^docs$", schema_view),
-    url(r"^auth-token/", authtoken_views.obtain_auth_token, name="auth-token"),
+    path("", include(router.urls)),
+    path("docs", schema_view),
+    path("auth-token/", authtoken_views.obtain_auth_token, name="auth-token"),
 ]

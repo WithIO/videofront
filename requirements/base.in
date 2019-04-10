@@ -1,5 +1,5 @@
 celery
-Django<2
+Django
 django-celery-results
 django-celery-beat
 django-filter
