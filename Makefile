@@ -1,113 +1,21 @@
-BOLD := \033[1m
-RESET := \033[0m
+PYTHON_BIN ?= python
 
-# If you want to use Docker instead of a virtualenv on your machine, set the DOCKER variable to
-# something not null.
-ifdef DOCKER
-	# Docker
-	COMPOSE              = docker-compose
-	COMPOSE_RUN          = $(COMPOSE) run --rm
-	COMPOSE_RUN_APP      = $(COMPOSE_RUN) app
-	COMPOSE_TEST         = $(COMPOSE) -p videofront-test -f docker/compose/test/docker-compose.yml --project-directory .
-	COMPOSE_TEST_RUN     = $(COMPOSE_TEST) run --rm
-	COMPOSE_TEST_RUN_APP = $(COMPOSE_TEST_RUN) app
-endif
+format: isort black
 
-default: help
+black:
+	'$(PYTHON_BIN)' -m black  --target-version py36 --exclude '/(\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|_build|buck-out|build|dist|node_modules|webpack_bundles)/' .
 
-.PHONY : help
-help:  ## Show this help
-	@echo "$(BOLD)VideoFront Makefile$(RESET)"
-	@echo "Please use 'make $(BOLD)target$(RESET)' where $(BOLD)target$(RESET) is one of:"
-	@grep -h ':\s\+##' Makefile | column -tn -s# | awk -F ":" '{ print "  $(BOLD)" $$1 "$(RESET)" $$2 }'
+isort:
+	'$(PYTHON_BIN)' -m isort -rc api
+	'$(PYTHON_BIN)' -m isort -rc contrib
+	'$(PYTHON_BIN)' -m isort -rc pipeline
+	'$(PYTHON_BIN)' -m isort -rc transcoding
+	'$(PYTHON_BIN)' -m isort -rc videofront
 
-##########################################################
-# Targets that work for Docker or Virtualenv installations
-#  (you must set the DOCKER environment variable to install with Docker)
+venv: requirements
+	'$(PYTHON_BIN)' -m pip install -r requirements.txt
 
-lint: ## lint back-end python sources
-	${MAKE} lint-format;
-	${MAKE} lint-flake8;
-	${MAKE} lint-pylint;
-.PHONY: lint
+requirements: requirements/base.txt requirements/dev.txt
 
-lint-format: ## only the formatting commands
-	${MAKE} lint-isort;
-	${MAKE} lint-black;  # black should come after isort just in case they don't agree...
-.PHONY: lint
-
-lint-black: ## lint back-end python sources with black
-	@echo 'lint:black started…';
-	@$(COMPOSE_TEST_RUN_APP) black api contrib pipeline transcoding videofront;
-.PHONY: lint-black
-
-lint-flake8: ## lint back-end python sources with flake8
-	@echo 'lint:flake8 started…';
-	@$(COMPOSE_TEST_RUN_APP) flake8;
-.PHONY: lint-flake8
-
-lint-isort: ## automatically re-arrange python imports in back-end code base
-	@echo 'lint:isort started…';
-	@$(COMPOSE_TEST_RUN_APP) isort --recursive --atomic .;
-.PHONY: lint-isort
-
-lint-pylint: ## lint back-end python sources with pylint
-	@echo 'lint:pylint started…';
-	@$(COMPOSE_TEST_RUN_APP) pylint api contrib pipeline transcoding videofront;
-.PHONY: lint-pylint
-
-test: ## run back-end tests
-	@$(COMPOSE_TEST_RUN_APP) pytest
-.PHONY: test
-
-.PHONY: migrate
-migrate:  ## Run django migration for the videofront project.
-	@echo "$(BOLD)Running migrations$(RESET)"
-	@$(COMPOSE_RUN_APP) python manage.py migrate
-
-superuser: ## create a Django superuser
-	@$(COMPOSE_RUN_APP) python manage.py createsuperuser
-.PHONY: superuser
-
-.PHONY: dist
-dist:  ## Build the package
-	@python setup.py sdist bdist_wheel
-
-.PHONY: clean
-clean:  ## Clean python build related directories and files
-	@echo "$(BOLD)Cleaning$(RESET)"
-	@rm -rf build dist videofront.egg-info
-
-##############################################
-# Targets specific to Virtualenv installations
-
-.PHONY: install
-install:  ## Install the project in the current environment, with its dependencies
-	@pip install .[aws]
-
-.PHONY: dev
-dev:  ## Install the project in the current environment, with its dependencies, including the ones needed in a development environment
-	@pip install -e .[aws,dev,quality,test]
-
-##########################################
-# Targets specific to Docker installations
-
-.PHONY: bootstrap
-bootstrap:  ## Prepare Docker images for the project
-	@$(COMPOSE) build base;
-	@$(COMPOSE) build app;
-	@echo 'Waiting until database is up…';
-	$(COMPOSE_RUN_APP) dockerize -wait tcp://db:5432 -timeout 60s
-	${MAKE} migrate;
-
-.PHONY: run
-run: ## start the Docker development server
-	@$(COMPOSE) up -d
-
-stop: ## stop the Docker development server
-	@$(COMPOSE) stop
-.PHONY: stop
-
-logs: ## get the Docker logs
-	@$(COMPOSE) logs -f
-.PHONY: logs
+%.txt: %.in
+	'$(PYTHON_BIN)' -m piptools compile $<

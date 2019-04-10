@@ -1,6 +1,5 @@
 """Url definitions for version 1 of the Video Front API"""
 from django.conf.urls import include, url
-
 from rest_framework import routers
 from rest_framework.authtoken import views as authtoken_views
 

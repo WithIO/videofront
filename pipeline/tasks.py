@@ -2,12 +2,11 @@ import logging
 from tempfile import NamedTemporaryFile
 from time import sleep
 
+import pycaption
+from celery import shared_task
 from django.core.cache import cache
 from django.db.transaction import TransactionManagementError
 from django.utils.timezone import now
-
-import pycaption
-from celery import shared_task
 
 from videofront.celery_videofront import send_task
 

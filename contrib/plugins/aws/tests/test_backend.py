@@ -2,10 +2,9 @@ import shutil
 from io import BytesIO
 from unittest.mock import Mock, patch
 
+from botocore.exceptions import ClientError
 from django.test import TestCase
 from django.test.utils import override_settings
-
-from botocore.exceptions import ClientError
 
 import pipeline.backend
 import pipeline.exceptions

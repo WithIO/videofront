@@ -2,7 +2,6 @@ import os
 from tempfile import NamedTemporaryFile
 
 from django.test import TestCase
-
 from PIL import Image
 
 from pipeline import utils

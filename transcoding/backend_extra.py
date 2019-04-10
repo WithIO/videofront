@@ -1,9 +1,8 @@
 """
 A backend for AWS to add extra transcoding formats
 """
-from django.conf import settings
-
 from botocore.exceptions import ClientError
+from django.conf import settings
 
 from contrib.plugins.aws.backend import Backend as AwsBackend
 

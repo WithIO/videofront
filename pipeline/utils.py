@@ -4,7 +4,6 @@ import string
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
-
 from PIL import Image
 
 
