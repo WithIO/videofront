@@ -1,10 +1,9 @@
 BOLD := \033[1m
 RESET := \033[0m
 
-# If you want to use a virtualenv on your machine instead of Docker, set the NO_DOCKER variable to
-# something not null. All commands will then be run on your machine instead of being run in the
-# Docker container using "docker-compose".
-ifndef NO_DOCKER
+# If you want to use Docker instead of a virtualenv on your machine, set the DOCKER variable to
+# something not null.
+ifdef DOCKER
 	# Docker
 	COMPOSE              = docker-compose
 	COMPOSE_RUN          = $(COMPOSE) run --rm
@@ -24,13 +23,17 @@ help:  ## Show this help
 
 ##########################################################
 # Targets that work for Docker or Virtualenv installations
-#  (you must set the NO_DOCKER environment variable to install without Docker)
+#  (you must set the DOCKER environment variable to install with Docker)
 
 lint: ## lint back-end python sources
-	${MAKE} lint-isort;
-	${MAKE} lint-black;  # black should come after isort just in case they don't agree...
+	${MAKE} lint-format;
 	${MAKE} lint-flake8;
 	${MAKE} lint-pylint;
+.PHONY: lint
+
+lint-format: ## only the formatting commands
+	${MAKE} lint-isort;
+	${MAKE} lint-black;  # black should come after isort just in case they don't agree...
 .PHONY: lint
 
 lint-black: ## lint back-end python sources with black

@@ -1,9 +1,8 @@
 from io import StringIO
 from time import time
+from unittest.mock import Mock
 
 from django.core.urlresolvers import reverse
-
-from mock import Mock
 
 from pipeline import models
 from pipeline.tests import factories

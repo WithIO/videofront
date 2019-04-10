@@ -5,34 +5,36 @@ They require setting environment variables as referenced in the following.
 import os
 from datetime import timedelta
 
+import dj_database_url
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "ThisIsAnExampleKeyForTestPurposeOnly")
-DEBUG = False
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", os.getenv("DJANGO_SECRET_KEY", ""))
+DEBUG = os.getenv("DJANGO_DEBUG") == "yes"
 ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h]
 
 # AWS
 
-AWS_ACCESS_KEY_ID = os.environ.get(
-    "DJANGO_AWS_ACCESS_KEY_ID", "ThisIsAnExampleAccessKeyIdForTestPurposeOnly"
-)
-AWS_SECRET_ACCESS_KEY = os.environ.get(
-    "DJANGO_AWS_SECRET_ACCESS_KEY", "ThisIsAnExampleSecretAccessKeyForTestPurposeOnly"
-)
+AWS_ACCESS_KEY_ID = os.environ.get("DJANGO_AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("DJANGO_AWS_SECRET_ACCESS_KEY")
 AWS_REGION = os.environ.get("DJANGO_AWS_REGION", "eu-west-1")
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 
 # S3 bucket that will store all public video assets.
-S3_BUCKET = os.environ.get("DJANGO_S3_BUCKET", "s3bucket")
+S3_BUCKET = os.environ.get("DJANGO_S3_BUCKET")
 
 # S3 bucket that will store all private video assets. In particular, source
 # video files will be stored in this bucket. If you do not wish your source
 # video files to be private, just set this setting to the same value as
 # S3_BUCKET.
-S3_PRIVATE_BUCKET = os.environ.get("DJANGO_S3_PRIVATE_BUCKET", "s3privatebucket")
+S3_PRIVATE_BUCKET = os.environ.get("DJANGO_S3_PRIVATE_BUCKET")
 
 # Eventually use a cloudfront distribution to stream and download objects
-# CLOUDFRONT_DOMAIN_NAME = "xxxx.cloudfront.net"
+_cf = os.getenv("DJANGO_CLOUDFRONT_DOMAIN_NAME")
+
+if _cf:
+    CLOUDFRONT_DOMAIN_NAME = _cf
 
 # Presets are of the form: (name, ID, bitrate)
 ELASTIC_TRANSCODER_PRESETS = [
@@ -41,9 +43,7 @@ ELASTIC_TRANSCODER_PRESETS = [
     ("HD", "1351620000001-000001", 5400),  # System preset: Generic 1080p
 ]
 ELASTIC_TRANSCODER_THUMBNAILS_PRESET = "1351620000001-000001"
-ELASTIC_TRANSCODER_PIPELINE_ID = os.environ.get(
-    "DJANGO_ELASTIC_TRANSCODER_PIPELINE_ID", "yourpipelineid"
-)
+ELASTIC_TRANSCODER_PIPELINE_ID = os.environ.get("DJANGO_ELASTIC_TRANSCODER_PIPELINE_ID")
 
 # Application definition
 
@@ -100,16 +100,7 @@ WSGI_APPLICATION = "videofront.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ.get("POSTGRES_DB", "videofront"),
-        "USER": os.environ.get("POSTGRES_USER", "fun"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "pass"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", 5432),
-    }
-}
+DATABASES = {"default": dj_database_url.config("DJANGO_DATABASE_URL")}
 
 # Caching
 # https://docs.djangoproject.com/en/1.9/topics/cache/#database-caching
@@ -139,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Paris"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -201,10 +192,11 @@ LOGGING = {
 
 # Celery
 
-BROKER_URL = "amqp://guest:guest@localhost:5672//"
+BROKER_URL = os.getenv("DJANGO_BROKER_URL")
 CELERY_RESULT_BACKEND = "djcelery.backends.database:DatabaseBackend"
-CELERY_ALWAYS_EAGER = False
+CELERY_ALWAYS_EAGER = DEBUG
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+CELERY_ACCEPT_CONTENT = ["json", "msgpack", "yaml"]
 
 CELERYBEAT_SCHEDULE = {
     "clean_upload_urls": {"task": "clean_upload_urls", "schedule": timedelta(hours=1)},

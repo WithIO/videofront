@@ -191,7 +191,7 @@ def _transcode_video(public_video_id, delete=True):
         # ended. This is because we want to keep the possibility of restarting
         # the transcoding process.
         processing_state.update(
-            progress=sum(jobs_progress) * 1. / len(jobs),
+            progress=sum(jobs_progress) * 1.0 / len(jobs),
             status=models.ProcessingState.STATUS_PROCESSING,
         )
 

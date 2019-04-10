@@ -49,7 +49,7 @@ def resize_image(in_path, out_path, max_size):
         max_size (int): maximum desired width and height
     """
     in_img = Image.open(in_path)
-    ratio = max_size * 1. / max(in_img.size)
+    ratio = max_size * 1.0 / max(in_img.size)
     out_img = in_img.resize(
         (round(in_img.size[0] * ratio), round(in_img.size[1] * ratio))
     )

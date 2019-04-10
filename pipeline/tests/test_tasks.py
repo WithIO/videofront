@@ -1,12 +1,11 @@
 import os
 from time import time
+from unittest.mock import Mock
 
 from django.core.urlresolvers import reverse
 from django.db.utils import IntegrityError
 from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
-
-from mock import Mock
 
 from pipeline import exceptions, models, tasks
 from pipeline.tests import factories
