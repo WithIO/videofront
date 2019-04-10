@@ -2,7 +2,8 @@ import django_filters
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
-from rest_framework import filters, mixins
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet
+from rest_framework import mixins
 from rest_framework import status as rest_status
 from rest_framework import viewsets
 from rest_framework.authentication import (
@@ -38,7 +39,7 @@ def schema_view(request):
     return Response(generator.get_schema(request=request))
 
 
-class PlaylistFilter(filters.FilterSet):
+class PlaylistFilter(FilterSet):
     """
     Filter playlists by name.
     """
@@ -63,7 +64,7 @@ class PlaylistViewSet(viewsets.ModelViewSet):
     lookup_field = "public_id"
     lookup_url_kwarg = "id"
 
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
     filter_class = PlaylistFilter
 
     def get_queryset(self):
@@ -183,7 +184,7 @@ class UserViewSet(
         model = User
 
 
-class VideoFilter(filters.FilterSet):
+class VideoFilter(FilterSet):
     """
     Filter videos by playlist public id.
     """
@@ -195,7 +196,8 @@ class VideoFilter(filters.FilterSet):
         fields = ["playlist_id"]
 
 
-class VideoQuerysetMixin(object):
+# noinspection PyUnresolvedReferences
+class VideoQuerysetMixin:
     def get_queryset(self):
         # Note that here we do not exclude failed videos
         queryset = (
@@ -223,7 +225,7 @@ class VideoListViewSet(
 
     serializer_class = serializers.VideoSerializer
 
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
     filter_class = VideoFilter
 
     def get_queryset(self):

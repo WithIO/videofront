@@ -1,9 +1,9 @@
 """
 Use factory boy to create random instances of each model in the application for testing purpose
 """
+import factory.django
 from django.contrib.auth.models import User
 
-import factory.django
 from pipeline import models
 
 

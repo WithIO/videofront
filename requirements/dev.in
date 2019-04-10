@@ -4,3 +4,4 @@ pip-tools
 pytest
 black
 isort
+factory_boy
