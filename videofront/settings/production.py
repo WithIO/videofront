@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # 3rd-party
-    "djcelery",
+    "django_celery_results",
+    "django_celery_beat",
     "django_filters",
     "rest_framework",
     "rest_framework.authtoken",
@@ -193,13 +194,14 @@ LOGGING = {
 
 # Celery
 
-BROKER_URL = os.getenv("DJANGO_BROKER_URL")
-CELERY_RESULT_BACKEND = "djcelery.backends.database:DatabaseBackend"
-CELERY_ALWAYS_EAGER = DEBUG
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-CELERY_ACCEPT_CONTENT = ["json", "msgpack", "yaml"]
+CELERY_BROKER_URL = os.getenv("DJANGO_CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_CACHE_BACKEND = "django-cache"
+CELERY_TASK_ALWAYS_EAGER = DEBUG
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-CELERYBEAT_SCHEDULE = {
+CELERY_BEAT_SCHEDULE = {
     "clean_upload_urls": {"task": "clean_upload_urls", "schedule": timedelta(hours=1)},
     "transcode_video_restart": {
         "task": "transcode_video_restart",

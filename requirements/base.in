@@ -1,6 +1,7 @@
-celery==3.1.23
+celery
 Django==1.11
-django-celery==3.1.17
+django-celery-results
+django-celery-beat
 django-filter
 djangorestframework
 django-rest-swagger==2.0.5
