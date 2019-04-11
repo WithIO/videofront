@@ -5,7 +5,9 @@ django-celery-beat
 django-filter
 djangorestframework
 django-rest-swagger
+dj-database-url
 pycaption
 Markdown
 Pillow
 boto3
+psycopg2
