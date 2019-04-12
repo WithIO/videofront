@@ -13,6 +13,15 @@ from . import backend, cache, managers, utils
 
 
 class Video(models.Model):
+    """
+    A video.
+
+    There is a `storage_path` attribute which can be left blank but which
+    optionally contains the source file's location on the storage. This is
+    used by the `transcode` endpoint which transcodes a video already present
+    on the storage instead of handling the upload.
+    """
+
     title = models.CharField(max_length=100)
     public_id = models.CharField(
         max_length=20,
@@ -30,6 +39,7 @@ class Video(models.Model):
         null=False,
         default=utils.generate_long_random_id,
     )
+    storage_path = models.CharField(max_length=1000, blank=True)
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 

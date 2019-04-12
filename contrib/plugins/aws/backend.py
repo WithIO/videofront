@@ -122,9 +122,18 @@ class Backend(pipeline.backend.BaseBackend):
             Key=self.get_video_folder_key(public_video_id) + "src/" + file_object.name,
         )
 
-    def start_transcoding(self, public_video_id):
+    def start_transcoding(self, public_video_id, video_path=""):
+        """
+        If `video_path` is empty, then guess the video location based on
+        `public_video_id`. Otherwise, directly use the `video_path`.
+        """
+
         pipeline_id = settings.ELASTIC_TRANSCODER_PIPELINE_ID
-        src_file_key = self.get_src_file_key(public_video_id)
+
+        if not video_path:
+            src_file_key = self.get_src_file_key(public_video_id)
+        else:
+            src_file_key = video_path
 
         # Start transcoding jobs
         jobs = []
@@ -145,6 +154,7 @@ class Backend(pipeline.backend.BaseBackend):
                 PipelineId=pipeline_id, Input={"Key": src_file_key}, Output=output
             )
             jobs.append(job["Job"])
+
         return jobs
 
     def check_progress(self, job):
@@ -153,9 +163,9 @@ class Backend(pipeline.backend.BaseBackend):
         job_status = job_update["Job"]["Output"]["Status"]
         if job_status == "Submitted" or job_status == "Progressing":
             # Elastic Transcoder does not provide any indicator of the time left
-            return 0, False
+            return 0.0, False
         elif job_status == "Complete":
-            return 100, True
+            return 100.0, True
         elif job_status == "Error":
             error_message = job_update["Job"]["Output"]["StatusDetail"]
             raise TranscodingFailed(error_message)

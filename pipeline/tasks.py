@@ -154,8 +154,14 @@ def transcode_video(public_video_id, delete=True):
 
 def _transcode_video(public_video_id, delete=True):
     """
-    This function is not thread-safe. It should only be called by the transcode_video task.
+    This function is not thread-safe. It should only be called by the
+    transcode_video task.
+
+    It will create the job in the backend and then poll every second to know
+    the current status of each job. When all jobs are done then the thumbnail
+    is created and the function returns.
     """
+
     video = models.Video.objects.get(public_id=public_video_id)
     processing_state = models.ProcessingState.objects.filter(
         video__public_id=public_video_id
@@ -164,35 +170,37 @@ def _transcode_video(public_video_id, delete=True):
         progress=0, status=models.ProcessingState.STATUS_PENDING, started_at=now()
     )
 
-    jobs = backend.get().start_transcoding(public_video_id)
-    success_job_indexes = []
-    error_job_indexes = []
+    jobs = backend.get().start_transcoding(public_video_id, video.storage_path)
+
+    done_job_indices = set()
+    all_job_indices = set(range(len(jobs)))
+    jobs_progress = [0.0 for _ in range(len(jobs))]
     errors = []
-    jobs_progress = [0] * len(jobs)
-    while len(success_job_indexes) + len(error_job_indexes) < len(jobs):
+
+    while all_job_indices - done_job_indices:
         for job_index, job in enumerate(jobs):
-            if (
-                job_index not in success_job_indexes
-                and job_index not in error_job_indexes
-            ):
-                try:
-                    jobs_progress[job_index], finished = backend.get().check_progress(
-                        job
-                    )
-                    if finished:
-                        success_job_indexes.append(job_index)
-                except exceptions.TranscodingFailed as error:
-                    error_job_indexes.append(job_index)
-                    error_message = error.args[0] if error.args else ""
-                    errors.append(error_message)
+            if job_index in done_job_indices:
+                continue
+
+            try:
+                jobs_progress[job_index], finished = backend.get().check_progress(job)
+
+                if finished:
+                    done_job_indices.add(job_index)
+            except exceptions.TranscodingFailed as error:
+                done_job_indices.add(job_index)
+                error_message = error.args[0] if error.args else ""
+                errors.append(error_message)
 
         # Note that we do not delete original assets once transcoding has
         # ended. This is because we want to keep the possibility of restarting
         # the transcoding process.
         processing_state.update(
-            progress=sum(jobs_progress) * 1.0 / len(jobs),
+            progress=float(sum(jobs_progress)) / float(len(jobs)),
             status=models.ProcessingState.STATUS_PROCESSING,
         )
+
+        sleep(1.0)
 
     # Create thumbnail
     if not errors:
@@ -233,7 +241,7 @@ def upload_subtitle(public_video_id, subtitle_public_id, language_code, content)
 
     Args:
         public_video_id (str)
-        subtitle_id (str)
+        subtitle_public_id (str)
         language_code (str)
         content (bytes)
     """

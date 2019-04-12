@@ -2,6 +2,7 @@ import django_filters
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework import mixins
 from rest_framework import status as rest_status
@@ -11,11 +12,12 @@ from rest_framework.authentication import (
     SessionAuthentication,
     TokenAuthentication,
 )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action, detail_route
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from pipeline import cache, exceptions, models, tasks
+from videofront.celery_videofront import send_task
 
 from . import serializers
 
@@ -362,25 +364,24 @@ class VideoUploadUrlViewSet(viewsets.ModelViewSet):
 
 
 class UploadViewset(viewsets.ViewSet):
+    """
+    Handles the upload and transcoding of videos
+
+    - The `upload` detail action will receive a file
+    - The `transcode` detail action will tanscode a file already in the backend
+    """
+
     lookup_field = "public_video_id"
     lookup_url_kwarg = "video_id"
 
-    @detail_route(methods=["POST", "OPTIONS"])
+    @action(detail=True, methods=["POST", "OPTIONS"])
     def upload(self, request, video_id=None):
         """
-        Upload a video file.
+        Upload a video file. Send the file using a HTTP multipart request and
+        naming the file field `file`.
         """
-        try:
-            video_upload_url = models.VideoUploadUrl.objects.available().get(
-                public_video_id=video_id
-            )
-        except models.VideoUploadUrl.DoesNotExist:
-            return Response(status=rest_status.HTTP_404_NOT_FOUND)
 
-        # CORS headers
-        cors_headers = {}
-        if video_upload_url.origin:
-            cors_headers["Access-Control-Allow-Origin"] = video_upload_url.origin
+        cors_headers, video_upload_url = self.prepare(video_id)
 
         # OPTIONS call
         if request.method == "OPTIONS":
@@ -396,6 +397,70 @@ class UploadViewset(viewsets.ViewSet):
             )
         tasks.upload_video(video_upload_url.public_video_id, video_file)
         return Response({"id": video_upload_url.public_video_id}, headers=cors_headers)
+
+    @action(detail=True, methods=["POST", "OPTIONS"])
+    def transcode(self, request, video_id=None):
+        """
+        Starts transcoding a video that is already present in the backend
+
+        Two POST arguments are required:
+
+        - `path` -- the path to the video on storage
+        - `name` -- the file name
+        """
+
+        cors_headers, video_upload_url = self.prepare(video_id)
+
+        if request.method == "OPTIONS":
+            return Response({}, headers=cors_headers)
+
+        video_path = request.data.get("path")
+        video_name = request.data.get("name")
+        missing = []
+
+        if not video_path:
+            missing.append("path")
+
+        if not video_name:
+            missing.append("name")
+
+        if missing:
+            return Response(
+                {k: "Missing argument" for k in missing},
+                status=rest_status.HTTP_400_BAD_REQUEST,
+                headers=cors_headers,
+            )
+
+        video = models.Video.objects.create(
+            public_id=video_upload_url.public_video_id,
+            owner=video_upload_url.owner,
+            title=video_name,
+            storage_path=video_path,
+        )
+
+        send_task("transcode_video", args=(video.public_id,))
+
+        return Response({"id": video.public_id}, headers=cors_headers)
+
+    def prepare(self, video_id):
+        """
+        Fetches the video associated with the ID and also generates the
+        appropriate CORS headers.
+        """
+
+        try:
+            video_upload_url = models.VideoUploadUrl.objects.available().get(
+                public_video_id=video_id
+            )
+        except models.VideoUploadUrl.DoesNotExist:
+            raise Http404
+
+        # CORS headers
+        cors_headers = {}
+        if video_upload_url.origin:
+            cors_headers["Access-Control-Allow-Origin"] = video_upload_url.origin
+
+        return cors_headers, video_upload_url
 
 
 class ErrorResponse(Exception):
