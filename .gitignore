@@ -7,6 +7,7 @@ dist/
 env/
 env3/
 venv/
+/static
 
 videofront/settings_prod.py
 celerybeat-schedule

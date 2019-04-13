@@ -10,7 +10,7 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", os.getenv("DJANGO_SECRET_KEY", ""))
 DEBUG = os.getenv("DJANGO_DEBUG") == "yes"
@@ -141,7 +141,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = "/static/"
+STATICFILES_STORAGE = os.getenv(
+    "DJANGO_STATICFILES_STORAGE",
+    "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+)
 
 # REST Framework
 
