@@ -11,3 +11,4 @@ Markdown
 Pillow
 boto3
 psycopg2
+sentry-sdk

@@ -10,7 +10,7 @@ billiard==3.6.0.0         # via celery
 boto3==1.9.130
 botocore==1.12.130        # via boto3, s3transfer
 celery==4.3.0
-certifi==2019.3.9         # via requests
+certifi==2019.3.9         # via requests, sentry-sdk
 chardet==3.0.4            # via requests
 coreapi==2.3.3            # via django-rest-swagger, openapi-codec
 coreschema==0.0.4         # via coreapi
@@ -43,9 +43,10 @@ python-dateutil==2.8.0    # via botocore, python-crontab
 pytz==2019.1              # via celery, django, django-timezone-field
 requests==2.21.0          # via coreapi
 s3transfer==0.2.0         # via boto3
+sentry-sdk==0.7.10
 simplejson==3.16.0        # via django-rest-swagger
 six==1.12.0               # via pycaption, python-dateutil
 sqlparse==0.3.0           # via django
 uritemplate==3.0.0        # via coreapi
-urllib3==1.24.1           # via botocore, requests
+urllib3==1.24.1           # via botocore, requests, sentry-sdk
 vine==1.3.0               # via amqp, celery
