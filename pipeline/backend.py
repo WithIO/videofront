@@ -1,6 +1,16 @@
 import importlib
+from typing import NamedTuple, Optional
 
 from django.conf import settings
+
+
+class JobInfo(NamedTuple):
+    """
+    Information about a job's output
+    """
+
+    width: Optional[int] = None
+    height: Optional[int] = None
 
 
 class BaseBackend(object):
@@ -39,6 +49,14 @@ class BaseBackend(object):
         Raises:
             TranscodingError in case of transcoding error. The exception
             message will be logged in the transcoding job.
+        """
+        raise NotImplementedError
+
+    def get_job_info(self, job) -> JobInfo:
+        """
+        Returns information about the job's output. Will be called after the
+        job is done. Values are not mandatory but filling them is appreciated
+        by the upper layers.
         """
         raise NotImplementedError
 
@@ -149,7 +167,7 @@ class MissingPluginBackend(Exception):
     pass
 
 
-def get():
+def get() -> BaseBackend:
     """
     Get the plugin backend based on the PLUGIN_BACKEND setting.
 

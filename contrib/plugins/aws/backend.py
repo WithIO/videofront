@@ -157,9 +157,13 @@ class Backend(pipeline.backend.BaseBackend):
 
         return jobs
 
-    def check_progress(self, job):
+    def _get_job_update(self, job):
         job_id = job["Id"]
         job_update = self.elastictranscoder_client.read_job(Id=job_id)
+        return job_update
+
+    def check_progress(self, job):
+        job_update = self._get_job_update(job)
         job_status = job_update["Job"]["Output"]["Status"]
         if job_status == "Submitted" or job_status == "Progressing":
             # Elastic Transcoder does not provide any indicator of the time left
@@ -171,6 +175,14 @@ class Backend(pipeline.backend.BaseBackend):
             raise TranscodingFailed(error_message)
         else:
             raise TranscodingFailed("Unknown transcoding status: {}".format(job_status))
+
+    def get_job_info(self, job) -> pipeline.backend.JobInfo:
+        job_update = self._get_job_update(job)
+
+        return pipeline.backend.JobInfo(
+            width=job_update["Job"]["Output"]["Width"],
+            height=job_update["Job"]["Output"]["Height"],
+        )
 
     def delete_video(self, public_video_id):
         folder = self.get_video_folder_key(public_video_id)

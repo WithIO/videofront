@@ -207,6 +207,8 @@ class VideoFormat(models.Model):
     video = models.ForeignKey(Video, related_name="formats", on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
     bitrate = models.FloatField(validators=[MinValueValidator(0)])
+    width = models.IntegerField(null=True, validators=[MinValueValidator(0)])
+    height = models.IntegerField(null=True, validators=[MinValueValidator(0)])
 
     class Meta:
         ordering = ["id"]

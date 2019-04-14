@@ -221,11 +221,18 @@ def _transcode_video(public_video_id, delete=True):
             # In case of errors, wipe all data
             delete_video(public_video_id)
     else:
+        info = (backend.get().get_job_info(job) for job in jobs)
+        formats = backend.get().iter_formats(public_video_id)
+
         # Create video formats first so that they are available as soon as the
         # video object becomes available from the API
-        for format_name, bitrate in backend.get().iter_formats(public_video_id):
+        for (format_name, bitrate), job_info in zip(formats, info):
             models.VideoFormat.objects.create(
-                video=video, name=format_name, bitrate=bitrate
+                video=video,
+                name=format_name,
+                bitrate=bitrate,
+                width=job_info.width,
+                height=job_info.height,
             )
 
         processing_state.update(status=models.ProcessingState.STATUS_SUCCESS)
