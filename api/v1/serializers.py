@@ -81,7 +81,16 @@ class VideoFormatSerializer(serializers.ModelSerializer):
     bitrate = serializers.FloatField(read_only=True)
 
     class Meta:
-        fields = ("name", "url", "bitrate", "width", "height")
+        fields = (
+            "name",
+            "url",
+            "bitrate",
+            "width",
+            "height",
+            "duration_millis",
+            "file_size",
+            "frame_rate",
+        )
         model = models.VideoFormat
 
 

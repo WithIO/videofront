@@ -182,6 +182,9 @@ class Backend(pipeline.backend.BaseBackend):
         return pipeline.backend.JobInfo(
             width=job_update["Job"]["Output"]["Width"],
             height=job_update["Job"]["Output"]["Height"],
+            duration_millis=job_update["Job"]["Output"]["DurationMillis"],
+            file_size=job_update["Job"]["Output"]["FileSize"],
+            frame_rate=job_update["Job"]["Output"]["FrameRate"],
         )
 
     def delete_video(self, public_video_id):

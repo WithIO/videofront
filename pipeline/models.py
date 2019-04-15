@@ -209,6 +209,9 @@ class VideoFormat(models.Model):
     bitrate = models.FloatField(validators=[MinValueValidator(0)])
     width = models.IntegerField(null=True, validators=[MinValueValidator(0)])
     height = models.IntegerField(null=True, validators=[MinValueValidator(0)])
+    duration_millis = models.IntegerField(null=True, validators=[MinValueValidator(0)])
+    file_size = models.IntegerField(null=True, validators=[MinValueValidator(0)])
+    frame_rate = models.CharField(max_length=15, blank=True)
 
     class Meta:
         ordering = ["id"]

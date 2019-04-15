@@ -1,5 +1,5 @@
 import importlib
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Text
 
 from django.conf import settings
 
@@ -11,6 +11,9 @@ class JobInfo(NamedTuple):
 
     width: Optional[int] = None
     height: Optional[int] = None
+    duration_millis: Optional[int] = None
+    file_size: Optional[int] = None
+    frame_rate: Text = ""
 
 
 class BaseBackend(object):

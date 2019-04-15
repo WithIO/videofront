@@ -233,6 +233,9 @@ def _transcode_video(public_video_id, delete=True):
                 bitrate=bitrate,
                 width=job_info.width,
                 height=job_info.height,
+                duration_millis=job_info.duration_millis,
+                file_size=job_info.file_size,
+                frame_rate=job_info.frame_rate,
             )
 
         processing_state.update(status=models.ProcessingState.STATUS_SUCCESS)
